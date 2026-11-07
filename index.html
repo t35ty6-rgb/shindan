@@ -43,6 +43,8 @@ select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(
 .words{display:grid;gap:4px}
 .words b{font-size:13px;color:var(--c)}
 .words.ng b{color:var(--muted)}
+.rtag{margin:0;font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--c)}
+.card{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--line)}
 .layers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .layer{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:2px;min-width:0}
 .layer .lbl{font-size:11px;color:var(--muted);letter-spacing:.04em}
@@ -93,6 +95,7 @@ const TYPE={
  earth:{n:'結果',key:'数字と損得、効率で決めるタイプ',good:'「結論から言うと」「◯分短くなる」「具体的には」',ng:'回りくどい話／結論がない／自分のペースを乱される'}
 };
 const OA='@594tlzba';
+const IMG={sun:'chokkan',moon:'hitogara',earth:'kekka'};
 function setsu(y,k){const s=D.S[y];if(!s)return null;const m=[2,3,4,5,6,7,8,9,10,11,12,1][k];return Date.UTC(k===11?y+1:y,m-1,s.charCodeAt(k)-48);}
 function calc(Y,M,Dd){
   const t=Date.UTC(Y,M-1,Dd);let best=null;
@@ -119,13 +122,8 @@ function show(sample){
   const text=`【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}\n（このまま送信すると、くわしい結果が届きます）`;
   const url='https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent(text);
   $('result').innerHTML=`
-   <div class="main t-${g}">
-     <span class="tag">${sample?'例：1990年1月23日生まれの場合':'あなたの診断結果'}</span>
-     <h2>${t.n}タイプ</h2>
-     <p>${t.key}です。</p>
-     <div class="words"><b>響く言葉</b><span>${t.good}</span></div>
-     <div class="words ng"><b>NGな言葉・行動</b><span>${t.ng}</span></div>
-   </div>
+   <p class="rtag t-${g}">${sample?'例：1990年1月23日生まれの場合':'あなたの診断結果'}</p>
+   <img class="card" src="img/${IMG[g]}.jpg" width="960" height="1198" alt="あなたは${t.n}タイプ。${t.key}です。響く言葉：${t.good}。NG：${t.ng}">
    <div class="layers">
      ${layer('ふだんの自分',r.hon,'リラックスした時')}
      ${layer('人前での自分',r.omote,'初対面・仕事の時')}
