@@ -53,6 +53,10 @@ select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(
 .cta{display:grid;gap:10px;padding:18px;border-radius:16px;border:2px solid var(--line-green)}
 .cta p{margin:0;font-size:14px}
 [hidden]{display:none!important}
+.teaser{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:1px solid #e3e6ec;border-radius:16px;padding:22px 16px;margin:8px 0 14px;text-align:center}
+.teaser .tlbl{font-size:13px;color:#6a7080;font-weight:700}.teaser .tname{font-size:34px;font-weight:900;line-height:1.2}.teaser .tkey{font-size:14px;color:#3d4556}
+.teaser.t-sun .tname{color:#a65f00}.teaser.t-moon .tname{color:#b8336c}.teaser.t-earth .tname{color:#2559b3}
+ul.gets{margin:4px 0 14px;padding-left:1.2em;font-size:14px;line-height:1.8}
 .line-btn{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:16px;color:#fff;background:var(--line-green);border-radius:999px;padding:14px}
 .sub{font-size:12px;color:var(--muted)}
 .sub a{color:var(--fg)}
@@ -121,19 +125,20 @@ function show(sample){
   const r=calc(+yS.value,+mS.value,+dS.value);
   if(!r){$('result').innerHTML='<p>1900年2月5日以降の日付を選んでください。</p>';return;}
   const g=GROUP[r.hon],t=TYPE[g],gi=GROUP[r.ishi];
+  if(!sample){try{localStorage.setItem('tw_birth',`${yS.value}-${mS.value}-${dS.value}`)}catch(_){}}
   const sendText=`【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}`;
   const text=sendText+'\n（このまま送信すると、くわしい結果が届きます）';
   const url='https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent(text);
   $('result').innerHTML=`
    <p class="rtag t-${g}">${sample?'例：1990年1月23日生まれの場合':'あなたの診断結果'}</p>
-   <img class="card" src="img/${IMG[g]}.jpg" width="960" height="1198" alt="あなたは${t.n}タイプ。${t.key}です。響く言葉：${t.good}。NG：${t.ng}">
+   <div class="teaser t-${g}"><span class="tlbl">あなたは</span><span class="tname">${t.n}タイプ</span><span class="tkey">${t.key}</span></div>
    <div class="layers">
      ${layer('ふだんの自分',r.hon,'リラックスした時')}
      ${layer('人前での自分',r.omote,'初対面・仕事の時')}
      ${layer('決める時の自分',r.ishi,'大事な判断の時')}
    </div>
    <div class="cta">
-     <p><b>くわしい結果はLINEで届きます。</b>ほかの2タイプとの「言葉の掛け違い」と、その直し方もお送りします。</p>
+     <p><b>くわしい結果はLINEで届きます。</b></p><ul class="gets"><li>あなた専用の診断カード（響く言葉・NGな言葉）</li><li>3つの自分の組み合わせと、ふだんの自分のくわしい解説</li><li>相手のタイプ別「ひと言足すだけ」の伝え方</li><li>ほかの2タイプとの「言葉の掛け違い」と直し方</li></ul>
      <a class="line-btn" id="lineBtn" href="${url}" target="_blank" rel="noopener" data-text="${esc2(sendText)}">LINEで結果を受け取る</a><p class="sub" id="sent" hidden style="color:#06C755;font-weight:700">LINEに送信しました。このあとすぐ、くわしい結果が届きます。</p>
      <p class="sub">ボタンを押すとLINEが開きます。入力済みのメッセージをそのまま送信してください。開かない場合は <a href="https://line.me/R/ti/p/${encodeURIComponent(OA)}" target="_blank" rel="noopener">友だち追加（${OA}）</a> のあと、次の文を送ってください。</p>
      <div class="msg">【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}</div>
