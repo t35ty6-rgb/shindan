@@ -1,4 +1,4 @@
-const R='../img/r/',IM='../img/';
+const R='../img/',IM='../img/';
 const Z="font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 900";
 const O="font-family: 'Outfit', sans-serif";
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
