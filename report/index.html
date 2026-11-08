@@ -90,7 +90,21 @@ function salesView(){
  <p class="note">下は見本（1990年1月23日生まれ）の最初のページです。</p>`;
  render(1990,1,23,'',4);
 }
-if(paid)dateForm();
+function freeView(){
+ const b=(store.get('tw_birth')||'').split('-').map(Number);
+ const go=(Y,M,D)=>{const out=buildReport(Y,M,D,'');if(!out){alert('1900年2月5日以降の日付を選んでください。');return}
+  const t=TT[out.r.core].n;
+  ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>${t}タイプのあなたへ。<br>3つの自分と、伝え方のくわしい結果</h1><p>${Y}年${M}月${D}日生まれ。「あなたの組み合わせ」「ふだんの自分」「相手のタイプ別の伝え方」を無料でお見せします。</p>`;
+  pages.innerHTML=[out.pages[2],out.pages[3],out.pages[7]].join('')+`<div class="ui noprint" style="padding:8px 0 0"><div class="eyebrow">完全版だけのページ</div><h1>あと9ページ、あなた専用で続きます</h1><p>人前での自分／決める時の自分／疲れ方と回復のしかた／職場の言い換え／家族・パートナーの言い換え／わたしの取扱説明書／今日からの7日間チャレンジ。表紙にお名前も入ります。</p><div class="row"><a class="btn pink" href="${BUY_URL}">980円で完全版を作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div><p class="note">お支払い後すぐに作成できます。PDFで保存できます。</p></div>`;};
+ if(b.length===3&&b[0]){go(b[0],b[1],b[2]);return}
+ ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>生年月日を選んでください</h1><form id="ff"><select id="fy" aria-label="年"></select><select id="fm" aria-label="月"></select><select id="fd" aria-label="日"></select><button class="btn main" type="submit">見る</button></form>`;
+ const G=i=>document.getElementById(i),yS=G('fy'),mS=G('fm'),dS=G('fd');
+ for(let i=new Date().getFullYear();i>=1900;i--)yS.add(new Option(i+'年',i));for(let i=1;i<=12;i++)mS.add(new Option(i+'月',i));
+ const fill=()=>{const k=+dS.value||1;const n=new Date(+yS.value,+mS.value,0).getDate();dS.innerHTML='';for(let i=1;i<=n;i++)dS.add(new Option(i+'日',i));dS.value=Math.min(k,n)};yS.value=1990;mS.value=1;fill();yS.onchange=fill;mS.onchange=fill;
+ G('ff').onsubmit=e=>{e.preventDefault();store.set('tw_birth',`${yS.value}-${mS.value}-${dS.value}`);go(+yS.value,+mS.value,+dS.value)};
+}
+if(q.get('mode')==='free')freeView();
+else if(paid)dateForm();
 else if(q.get('sample')){ui.innerHTML=`<div class="eyebrow">SAMPLE</div><h1>見本：1990年1月23日生まれの場合</h1><div class="row"><a class="btn pink" href="${BUY_URL}">980円で自分のレポートを作る</a></div>`;render(1990,1,23,'')}
 else salesView();
 </script>

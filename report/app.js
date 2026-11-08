@@ -249,10 +249,11 @@ function challenge(r){
 function buildReport(Y,M,Dd,name){
  const c=calc(Y,M,Dd); if(!c) return null;
  const r={core:GROUP[c.hon],surf:GROUP[c.omote],dec:GROUP[c.ishi],y:Y,m:M,d:Dd,name:(name||'').trim().slice(0,20)};
- return {r,html:[cover(r),contents(r),combo(r),
+ const pages=[cover(r),contents(r),combo(r),
   typePage('core',r.core,'04','CHAPTER 1 ／ ふだんの自分','ふだんのあなた　約50％'),
   tired(r),
   typePage('surf',r.surf,'06','CHAPTER 2 ／ 人前での自分','人前でのあなた　約35％'),
   typePage('dec',r.dec,'07','CHAPTER 3 ／ 決める時の自分','決める時のあなた　約15％'),
-  guide(r),rewriteWork(r),rewriteHome(r),manual(r),challenge(r)].join('')};
+  guide(r),rewriteWork(r),rewriteHome(r),manual(r),challenge(r)];
+ return {r,pages,html:pages.join('')};
 }
