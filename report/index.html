@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>あなた専用レポート｜tsutawaru</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--s:1}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f8;color:#1b2440;font-family:'Noto Sans JP',sans-serif}
+.ui{max-width:794px;margin:0 auto;padding:28px 16px 8px}
+.ui h1{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:26px;line-height:1.35;margin:0 0 6px}
+.ui p{margin:0 0 12px;font-size:14px;line-height:1.8;color:#3d4556}
+.eyebrow{font-family:'Outfit',sans-serif;font-weight:700;font-size:11px;letter-spacing:.24em;color:#5b6476;margin-bottom:8px}
+form{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff;border:1px solid #dde1e8;padding:14px;margin:12px 0}
+select,input{font:inherit;font-size:15px;padding:10px;border:1px solid #c9ced8;background:#fff;color:#1b2440;border-radius:6px}
+input{flex:1 1 160px;min-width:0}
+.btn{display:inline-block;font:inherit;font-weight:900;font-size:15px;padding:12px 20px;border:0;border-radius:999px;cursor:pointer;text-decoration:none;text-align:center}
+.btn.main{background:#2f6fd6;color:#fff}.btn.pink{background:#e8417a;color:#fff}.btn.ghost{background:#fff;color:#1b2440;border:1.5px solid #1b2440}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #9cc0f5;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 18px}
+.note{font-size:12px!important;color:#5b6476!important}
+#pages{display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 16px 48px}
+.sheet{width:calc(794px * var(--s));height:calc(1123px * var(--s));overflow:hidden;box-shadow:0 4px 20px rgba(27,36,64,.12);background:#fff;flex:none}
+.pg{width:794px;height:1123px;transform:scale(var(--s));transform-origin:0 0;background:#fff;color:#1b2440;font-family:'Noto Sans JP',sans-serif;position:relative}
+.pg img{display:block}
+.lock{position:relative}
+.lock::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(243,245,248,0) 40%,#f3f5f8 96%)}
+@page{size:794px 1123px;margin:0}
+@media print{
+ :root{--s:1!important}
+ body{background:#fff}
+ .ui,.noprint{display:none!important}
+ #pages{padding:0;gap:0;display:block}
+ .sheet{box-shadow:none;break-after:page;page-break-after:always}
+ .pg{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="ui" id="ui"></div>
+<div id="pages"></div>
+<script src="calc.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+const BUY_URL='https://buy.stripe.com/7sY3cv0kE83IeBk7cgbjW0i';
+const q=new URLSearchParams(location.search);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+if(/^cs_/.test(q.get('sid')||''))store.set('tw_paid',q.get('sid'));
+const paid=!!store.get('tw_paid');
+const ui=document.getElementById('ui'),pages=document.getElementById('pages');
+function fit(){document.documentElement.style.setProperty('--s',Math.min(1,(innerWidth-32)/794))}
+addEventListener('resize',fit);fit();
+function render(Y,M,D,name,lockAfter){
+ const out=buildReport(Y,M,D,name);if(!out){alert('1900年2月5日以降の日付を選んでください。');return false}
+ pages.innerHTML=out.html;
+ if(lockAfter){[...pages.children].forEach((s,i)=>{if(i>=lockAfter)s.remove();else if(i===lockAfter-1)s.classList.add('lock')})}
+ return true;
+}
+function dateForm(){
+ const prev=(store.get('tw_birth')||'1990-01-23').split('-').map(Number);
+ ui.innerHTML=`<div class="eyebrow">YOUR PERSONAL ISSUE</div>
+ <h1>あなた専用レポートを作ります</h1>
+ <p>ご購入ありがとうございます。生年月日を選んで「作る」を押すと、あなただけの12ページが下に出ます。</p>
+ <form id="f"><select id="y" aria-label="年"></select><select id="m" aria-label="月"></select><select id="d" aria-label="日"></select><input id="nm" placeholder="お名前（表紙に入ります・任意）" maxlength="20" value="${esc(store.get('tw_name')||'')}"><button class="btn main" type="submit">作る</button></form>
+ <div class="row noprint" id="after" hidden><button class="btn pink" id="pdf" type="button">PDFで保存する</button></div>
+ <p class="note">スマホは「PDFで保存する」→ 共有 →「ファイルに保存」で保存できます。大切な人の分も、生年月日を変えて何度でも作れます。</p>`;
+ const G=i=>document.getElementById(i);const yS=G('y'),mS=G('m'),dS=G('d'),f=G('f'),nm=G('nm'),after=G('after'),pdf=G('pdf');
+ for(let i=new Date().getFullYear();i>=1900;i--)yS.add(new Option(i+'年',i));
+ for(let i=1;i<=12;i++)mS.add(new Option(i+'月',i));
+ const fill=()=>{const k=+dS.value||prev[2];const n=new Date(+yS.value,+mS.value,0).getDate();dS.innerHTML='';for(let i=1;i<=n;i++)dS.add(new Option(i+'日',i));dS.value=Math.min(k,n)};
+ yS.value=prev[0];mS.value=prev[1];fill();dS.value=prev[2];
+ yS.onchange=fill;mS.onchange=fill;
+ f.onsubmit=e=>{e.preventDefault();
+  const Y=+yS.value,M=+mS.value,D=+dS.value,N=nm.value;
+  store.set('tw_birth',`${Y}-${M}-${D}`);store.set('tw_name',N);
+  if(render(Y,M,D,N)){after.hidden=false;pages.scrollIntoView({behavior:'smooth'})}};
+ pdf.onclick=()=>print();
+}
+function salesView(){
+ ui.innerHTML=`<div class="eyebrow">TSUTAWARU PERSONAL ISSUE</div>
+ <h1>あなたの中の三人の自分。<br>生年月日から作る、あなただけの12ページ。</h1>
+ <p>ふだん・人前・決める時の3つのタイプ、疲れ方、相手のタイプ別の伝え方、職場と家族の言い換え12例、まわりに渡せる「わたしの取扱説明書」まで。</p>
+ <div class="row"><a class="btn pink" href="${BUY_URL}">980円で自分のレポートを作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div>
+ <p class="note">下は見本（1990年1月23日生まれ）の最初のページです。</p>`;
+ render(1990,1,23,'',4);
+}
+if(paid)dateForm();
+else if(q.get('sample')){ui.innerHTML=`<div class="eyebrow">SAMPLE</div><h1>見本：1990年1月23日生まれの場合</h1><div class="row"><a class="btn pink" href="${BUY_URL}">980円で自分のレポートを作る</a></div>`;render(1990,1,23,'')}
+else salesView();
+</script>
+</body>
+</html>
