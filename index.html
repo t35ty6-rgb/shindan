@@ -52,6 +52,7 @@ select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(
 .layer .use{font-size:11px;color:var(--muted);line-height:1.5}
 .cta{display:grid;gap:10px;padding:18px;border-radius:16px;border:2px solid var(--line-green)}
 .cta p{margin:0;font-size:14px}
+[hidden]{display:none!important}
 .line-btn{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:16px;color:#fff;background:var(--line-green);border-radius:999px;padding:14px}
 .sub{font-size:12px;color:var(--muted)}
 .sub a{color:var(--fg)}
@@ -84,6 +85,7 @@ select:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(
   <p class="foot">生年月日の統計にもとづく傾向です。当てはまらない部分があっても大丈夫です。</p>
 </div>
 
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const D={"T60":"gdbelhgdbeaaebbeaaebdghlebdghljkichljkicffciicffcikjlhcikjlh","TM":["fijhdeabglkc","ifcklgbaedhj","lkcfijhdeabg","dhjifcklgbae","lkcfijhdeabg","dhjifcklgbae","abglkcfijhde","baedhjifcklg","hdeabglkcfij","klgbaedhjifc"],"TY":["abglkcfijhde","baedhjifcklg","hdeabglkcfij","klgbaedhjifc","hdeabglkcfij","klgbaedhjifc","fijhdeabglkc","ifcklgbaedhj","lkcfijhdeabg","dhjifcklgbae"],"S":{"1899":"465667888776","1900":"465668889876","1901":"465668889886","1902":"566678889886","1903":"576778999887","1904":"565667889876","1905":"465668889886","1906":"566678889886","1907":"576778999887","1908":"565667889876","1909":"465668889886","1910":"566668889886","1911":"576778999887","1912":"565667889876","1913":"465668889886","1914":"566668889886","1915":"576678999887","1916":"565667889876","1917":"465668889886","1918":"465668889886","1919":"576678899886","1920":"565667888876","1921":"465668889886","1922":"465668889886","1923":"566678899886","1924":"565667888876","1925":"465668889876","1926":"465668889886","1927":"566678899886","1928":"565667888876","1929":"465668889876","1930":"465668889886","1931":"566678899886","1932":"565667888776","1933":"465667889876","1934":"465668889886","1935":"566678889886","1936":"565667888776","1937":"465667889876","1938":"465668889886","1939":"566668889886","1940":"565667888776","1941":"465667889876","1942":"465668889886","1943":"566668889886","1944":"565667888776","1945":"465667889876","1946":"465668889886","1947":"566668889886","1948":"565567888776","1949":"465667889876","1950":"465668889886","1951":"565668889886","1952":"565567788775","1953":"465667888876","1954":"465668889886","1955":"465668889886","1956":"555567788775","1957":"465667888876","1958":"465668889876","1959":"465668889886","1960":"555567788775","1961":"465667888876","1962":"465667889876","1963":"465668889886","1964":"555567778775","1965":"465667888776","1966":"465667889876","1967":"465668889886","1968":"555567778775","1969":"465667888776","1970":"465667889876","1971":"465668889886","1972":"555557778775","1973":"465667888776","1974":"465667889876","1975":"465668889886","1976":"555557778775","1977":"465667888776","1978":"465667889876","1979":"465668889886","1980":"555557778775","1981":"465567788776","1982":"465667888876","1983":"465668889886","1984":"554557778775","1985":"465567788776","1986":"465667888876","1987":"465668889886","1988":"454557778775","1989":"455567788775","1990":"465667888876","1991":"465667889876","1992":"454557778775","1993":"455567788775","1994":"465667888876","1995":"465667889876","1996":"454557778775","1997":"455567778775","1998":"465667888776","1999":"465667889876","2000":"454557778775","2001":"455557778775","2002":"465667888776","2003":"465667889876","2004":"454557778775","2005":"455557778775","2006":"465667888776","2007":"465667889876","2008":"454557778775","2009":"455557778775","2010":"465567788776","2011":"465667889876","2012":"454557778775","2013":"454557778775","2014":"465567788776","2015":"465667888876","2016":"454557778775","2017":"454557778775","2018":"465567788776","2019":"465667888876","2020":"454556778775","2021":"354557778775","2022":"455567788775","2023":"465667888876","2024":"454556778775","2025":"354557778775","2026":"455567778775"}};
 const CODES=['000','001','012','024','025','100','108','125','555','789','888','919'];
@@ -119,7 +121,8 @@ function show(sample){
   const r=calc(+yS.value,+mS.value,+dS.value);
   if(!r){$('result').innerHTML='<p>1900年2月5日以降の日付を選んでください。</p>';return;}
   const g=GROUP[r.hon],t=TYPE[g],gi=GROUP[r.ishi];
-  const text=`【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}\n（このまま送信すると、くわしい結果が届きます）`;
+  const sendText=`【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}`;
+  const text=sendText+'\n（このまま送信すると、くわしい結果が届きます）';
   const url='https://line.me/R/oaMessage/'+encodeURIComponent(OA)+'/?'+encodeURIComponent(text);
   $('result').innerHTML=`
    <p class="rtag t-${g}">${sample?'例：1990年1月23日生まれの場合':'あなたの診断結果'}</p>
@@ -131,11 +134,21 @@ function show(sample){
    </div>
    <div class="cta">
      <p><b>くわしい結果はLINEで届きます。</b>ほかの2タイプとの「言葉の掛け違い」と、その直し方もお送りします。</p>
-     <a class="line-btn" href="${url}" target="_blank" rel="noopener">LINEで結果を受け取る</a>
+     <a class="line-btn" id="lineBtn" href="${url}" target="_blank" rel="noopener" data-text="${esc2(sendText)}">LINEで結果を受け取る</a><p class="sub" id="sent" hidden style="color:#06C755;font-weight:700">LINEに送信しました。このあとすぐ、くわしい結果が届きます。</p>
      <p class="sub">ボタンを押すとLINEが開きます。入力済みのメッセージをそのまま送信してください。開かない場合は <a href="https://line.me/R/ti/p/${encodeURIComponent(OA)}" target="_blank" rel="noopener">友だち追加（${OA}）</a> のあと、次の文を送ってください。</p>
      <div class="msg">【タイプ診断】${t.n}タイプ／決め手：${TYPE[gi].n}</div>
    </div>`;
 }
+const esc2=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let liffReady=false;
+if(window.liff){liff.init({liffId:'2012466023-cL4ycho5'}).then(()=>{liffReady=true}).catch(()=>{});}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('#lineBtn');if(!a)return;
+  let ctx=null;try{ctx=liffReady&&liff.isInClient()?liff.getContext():null}catch(_){}
+  if(!ctx||ctx.type!=='utou')return;
+  e.preventDefault();
+  liff.sendMessages([{type:'text',text:a.dataset.text}]).then(()=>{a.hidden=true;$('sent').hidden=false;setTimeout(()=>{try{liff.closeWindow()}catch(_){}},1500)}).catch(()=>{location.href=a.href});
+});
 $('ask').addEventListener('submit',e=>{e.preventDefault();show(false);$('result').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
 show(true);
 </script>
