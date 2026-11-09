@@ -6,7 +6,7 @@
 <title>あなた専用レポート｜tsutawaru</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Yusei+Magic&display=swap" rel="stylesheet">
 <style>
 :root{--s:1}
 *{box-sizing:border-box}
@@ -23,6 +23,8 @@ input{flex:1 1 160px;min-width:0}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #9cc0f5;outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 18px}
 [hidden]{display:none!important}
+.pt{flex-basis:100%;display:flex;flex-direction:column;gap:6px;margin-top:6px;font-size:14px}
+.prow{display:flex;flex-wrap:wrap;gap:6px}.prow input{flex:1 1 120px}.prow select{font-size:14px;padding:8px}
 .note{font-size:12px!important;color:#5b6476!important}
 #pages{display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 16px 48px}
 .sheet{width:calc(794px * var(--s));height:calc(1123px * var(--s));overflow:hidden;box-shadow:0 4px 20px rgba(27,36,64,.12);background:#fff;flex:none}
@@ -46,6 +48,7 @@ input{flex:1 1 160px;min-width:0}
 <div id="pages"></div>
 <script src="calc.js"></script>
 <script src="data.js"></script>
+<script src="data2.js"></script>
 <script src="app.js"></script>
 <script>
 const BUY_URL='https://buy.stripe.com/7sY3cv0kE83IeBk7cgbjW0i';
@@ -56,8 +59,8 @@ const paid=!!store.get('tw_paid');
 const ui=document.getElementById('ui'),pages=document.getElementById('pages');
 function fit(){document.documentElement.style.setProperty('--s',Math.min(1,(innerWidth-32)/794))}
 addEventListener('resize',fit);fit();
-function render(Y,M,D,name,lockAfter){
- const out=buildReport(Y,M,D,name);if(!out){alert('1900年2月5日以降の日付を選んでください。');return false}
+function render(Y,M,D,name,lockAfter,partners){
+ const out=buildReport(Y,M,D,name,partners);if(!out){alert('1900年2月5日以降の日付を選んでください。');return false}
  pages.innerHTML=out.html;
  if(lockAfter){[...pages.children].forEach((s,i)=>{if(i>=lockAfter)s.remove();else if(i===lockAfter-1)s.classList.add('lock')})}
  return true;
@@ -66,8 +69,10 @@ function dateForm(){
  const prev=(store.get('tw_birth')||'1990-01-23').split('-').map(Number);
  ui.innerHTML=`<div class="eyebrow">YOUR PERSONAL ISSUE</div>
  <h1>あなた専用レポートを作ります</h1>
- <p>ご購入ありがとうございます。生年月日を選んで「作る」を押すと、あなただけの12ページが下に出ます。</p>
- <form id="f"><select id="y" aria-label="年"></select><select id="m" aria-label="月"></select><select id="d" aria-label="日"></select><input id="nm" placeholder="お名前（表紙に入ります・任意）" maxlength="20" value="${esc(store.get('tw_name')||'')}"><button class="btn main" type="submit">作る</button></form>
+ <p>ご購入ありがとうございます。生年月日を選んで「作る」を押すと、あなただけのレポート（16〜19ページ）が下に出ます。</p>
+ <form id="f"><select id="y" aria-label="年"></select><select id="m" aria-label="月"></select><select id="d" aria-label="日"></select><input id="nm" placeholder="お名前（表紙に入ります・任意）" maxlength="20" value="${esc(store.get('tw_name')||'')}">
+ <div class="pt"><b>伝え方を知りたい相手（3人まで・任意）</b><span class="note">家族・上司・パートナーなど。1人につき1ページ「その人への伝え方」が入ります。</span>${[0,1,2].map(i=>`<div class="prow"><input id="pn${i}" placeholder="呼び名" maxlength="12"><select id="pr${i}" aria-label="関係">${REL.map(x=>`<option>${x}</option>`).join('')}</select><select id="py${i}" aria-label="年"><option value="">年</option></select><select id="pm${i}" aria-label="月"><option value="">月</option></select><select id="pd${i}" aria-label="日"><option value="">日</option></select></div>`).join('')}</div>
+ <button class="btn main" type="submit">作る</button></form>
  <div class="row noprint" id="after" hidden><button class="btn pink" id="pdf" type="button">PDFで保存する</button></div>
  <p class="note">スマホは「PDFで保存する」→ 共有 →「ファイルに保存」で保存できます。大切な人の分も、生年月日を変えて何度でも作れます。</p>`;
  const G=i=>document.getElementById(i);const yS=G('y'),mS=G('m'),dS=G('d'),f=G('f'),nm=G('nm'),after=G('after'),pdf=G('pdf');
@@ -76,16 +81,18 @@ function dateForm(){
  const fill=()=>{const k=+dS.value||prev[2];const n=new Date(+yS.value,+mS.value,0).getDate();dS.innerHTML='';for(let i=1;i<=n;i++)dS.add(new Option(i+'日',i));dS.value=Math.min(k,n)};
  yS.value=prev[0];mS.value=prev[1];fill();dS.value=prev[2];
  yS.onchange=fill;mS.onchange=fill;
+ for(let i=0;i<3;i++){const py=G('py'+i),pm=G('pm'+i),pd=G('pd'+i);for(let y=new Date().getFullYear();y>=1900;y--)py.add(new Option(y+'年',y));for(let m=1;m<=12;m++)pm.add(new Option(m+'月',m));for(let d=1;d<=31;d++)pd.add(new Option(d+'日',d));}
  f.onsubmit=e=>{e.preventDefault();
   const Y=+yS.value,M=+mS.value,D=+dS.value,N=nm.value;
   store.set('tw_birth',`${Y}-${M}-${D}`);store.set('tw_name',N);
-  if(render(Y,M,D,N)){after.hidden=false;pages.scrollIntoView({behavior:'smooth'})}};
+  const ps=[0,1,2].map(i=>({name:G('pn'+i).value,rel:G('pr'+i).value,y:+G('py'+i).value,m:+G('pm'+i).value,d:+G('pd'+i).value})).filter(p=>p.y&&p.m&&p.d&&new Date(p.y,p.m,0).getDate()>=p.d);
+  if(render(Y,M,D,N,0,ps)){after.hidden=false;pages.scrollIntoView({behavior:'smooth'})}};
  pdf.onclick=()=>print();
 }
 function salesView(){
  ui.innerHTML=`<div class="eyebrow">TSUTAWARU PERSONAL ISSUE</div>
- <h1>あなたの中の三人の自分。<br>生年月日から作る、あなただけの12ページ。</h1>
- <p>ふだん・人前・決める時の3つのタイプ、疲れ方、相手のタイプ別の伝え方、職場と家族の言い換え12例、まわりに渡せる「わたしの取扱説明書」まで。</p>
+ <h1>あなたの中の三人の自分。<br>生年月日から作る、あなただけの一冊。</h1>
+ <p>ふだん・人前・決める時の3つのタイプ、12タイプのコード解説、相手のタイプ別の伝え方、言い換え12例、そのまま使える文例30本、大切な人3人への伝え方ページ、まわりに渡せる「わたしの取扱説明書」まで。</p>
  <div class="row"><a class="btn pink" href="${BUY_URL}">980円で自分のレポートを作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div>
  <p class="note">下は見本（1990年1月23日生まれ）の最初のページです。</p>`;
  render(1990,1,23,'',4);
@@ -95,7 +102,7 @@ function freeView(){
  const go=(Y,M,D)=>{const out=buildReport(Y,M,D,'');if(!out){alert('1900年2月5日以降の日付を選んでください。');return}
   const t=TT[out.r.core].n;
   ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>${t}タイプのあなたへ。<br>3つの自分と、伝え方のくわしい結果</h1><p>${Y}年${M}月${D}日生まれ。「あなたの組み合わせ」「ふだんの自分」「相手のタイプ別の伝え方」を無料でお見せします。</p>`;
-  pages.innerHTML=[out.pages[2],out.pages[3],out.pages[7]].join('')+`<div class="ui noprint" style="padding:8px 0 0"><div class="eyebrow">完全版だけのページ</div><h1>あと9ページ、あなた専用で続きます</h1><p>人前での自分／決める時の自分／疲れ方と回復のしかた／職場の言い換え／家族・パートナーの言い換え／わたしの取扱説明書／今日からの7日間チャレンジ。表紙にお名前も入ります。</p><div class="row"><a class="btn pink" href="${BUY_URL}">980円で完全版を作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div><p class="note">お支払い後すぐに作成できます。PDFで保存できます。</p></div>`;};
+  pages.innerHTML=[out.byKey.combo,out.byKey.core,out.byKey.guide].join('')+`<div class="ui noprint" style="padding:8px 0 0"><div class="eyebrow">完全版だけのページ</div><h1>あと${out.count-3}ページ以上、あなた専用で続きます</h1><p>あなたのコード解説／人前の自分／決める時の自分／疲れ方／言い換え12例／そのまま使える文例30本／大切な人3人への伝え方ページ／わたしの取扱説明書／7日間チャレンジ。表紙にお名前も入ります。</p><div class="row"><a class="btn pink" href="${BUY_URL}">980円で完全版を作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div><p class="note">お支払い後すぐに作成できます。PDFで保存できます。</p></div>`;};
  if(b.length===3&&b[0]){go(b[0],b[1],b[2]);return}
  ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>生年月日を選んでください</h1><form id="ff"><select id="fy" aria-label="年"></select><select id="fm" aria-label="月"></select><select id="fd" aria-label="日"></select><button class="btn main" type="submit">見る</button></form>`;
  const G=i=>document.getElementById(i),yS=G('fy'),mS=G('fm'),dS=G('fd');
