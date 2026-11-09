@@ -75,6 +75,7 @@ function dateForm(){
  <button class="btn main" type="submit">作る</button></form>
  <div class="row noprint" id="after" hidden><button class="btn pink" id="pdf" type="button">PDFで保存する</button><a class="btn main" id="paidline" href="#" target="_blank" rel="noopener" style="background:#06C755">LINEに「購入済み」を送る</a></div>
  <p class="note noprint" id="paidnote" hidden>「購入済み」を送ると、LINEの購入案内が届かなくなります。</p>
+ <div class="row noprint" id="ext" hidden><a class="btn ghost" id="extbtn" href="#">Safariで開く（PDF保存が確実です）</a></div>
  <p class="note">スマホは「PDFで保存する」→ 共有 →「ファイルに保存」で保存できます。大切な人の分も、生年月日を変えて何度でも作れます。</p>`;
  const G=i=>document.getElementById(i);const yS=G('y'),mS=G('m'),dS=G('d'),f=G('f'),nm=G('nm'),after=G('after'),pdf=G('pdf');
  for(let i=new Date().getFullYear();i>=1900;i--)yS.add(new Option(i+'年',i));
@@ -89,6 +90,7 @@ function dateForm(){
   const ps=[0,1,2].map(i=>({name:G('pn'+i).value,rel:G('pr'+i).value,y:+G('py'+i).value,m:+G('pm'+i).value,d:+G('pd'+i).value})).filter(p=>p.y&&p.m&&p.d&&new Date(p.y,p.m,0).getDate()>=p.d);
   if(render(Y,M,D,N,0,ps)){after.hidden=false;G('paidnote').hidden=false;pages.scrollIntoView({behavior:'smooth'})}};
  pdf.onclick=()=>print();
+ if(/Line\//.test(navigator.userAgent)){const u=new URL(location.href);u.searchParams.set('openExternalBrowser','1');G('extbtn').href=u.toString();G('ext').hidden=false}
  G('paidline').href='https://line.me/R/oaMessage/'+encodeURIComponent('@594tlzba')+'/?'+encodeURIComponent('【購入済み】レポートを作りました');
 }
 function salesView(){
@@ -117,5 +119,6 @@ else if(paid)dateForm();
 else if(q.get('sample')){ui.innerHTML=`<div class="eyebrow">SAMPLE</div><h1>見本：1990年1月23日生まれの場合</h1><div class="row"><a class="btn pink" href="${BUY_URL}">980円で自分のレポートを作る</a></div>`;render(1990,1,23,'')}
 else salesView();
 </script>
+<footer class="noprint" style="text-align:center;padding:24px 16px 40px;font-size:12px"><a href="./law.html" style="color:#6b7280">特定商取引法に基づく表記</a></footer>
 </body>
 </html>
