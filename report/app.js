@@ -203,5 +203,5 @@ function buildReport(Y,M,Dd,name,partners){
  plan[1].f=()=>contents(r,plan);
  const pages=plan.map(p=>PAGE(p.no,p.f()));
  const byKey={};plan.forEach((p,i)=>byKey[p.key]=pages[i]);
- return {r,pages,byKey,count:pages.length,html:pages.join('')};
+ return {r,pages,plan,byKey,count:pages.length,html:pages.join('')};
 }

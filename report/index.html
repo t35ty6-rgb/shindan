@@ -30,11 +30,38 @@ input{flex:1 1 160px;min-width:0}
 .sheet{width:calc(794px * var(--s));height:calc(1123px * var(--s));overflow:hidden;box-shadow:0 4px 20px rgba(27,36,64,.12);background:#fff;flex:none}
 .pg{width:794px;height:1123px;transform:scale(var(--s));transform-origin:0 0;background:#fff;color:#1b2440;font-family:'Noto Sans JP',sans-serif;position:relative}
 .pg img{display:block}
-.lock{position:relative}
-.lock::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(243,245,248,0) 40%,#f3f5f8 96%)}
+.lock{position:relative;height:calc(1123px * var(--s) * .52)!important;box-shadow:none!important}
+.lock::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(243,245,248,0) 15%,#f3f5f8 92%)}
+.pw{width:100%;max-width:794px;margin:-8px auto 0;background:#fff;border:2px solid #e8417a;border-radius:20px;padding:26px 20px 24px;text-align:center;box-shadow:0 10px 30px rgba(232,65,122,.12)}
+.pw .tag{display:inline-block;background:#e8417a;color:#fff;font-weight:900;font-size:13px;padding:4px 14px;border-radius:999px;margin-bottom:10px}
+.pw h2{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:clamp(21px,5vw,28px);line-height:1.4;margin:0 0 6px}
+.pw h2 b{color:#e8417a}
+.pw .lead{font-size:14px;line-height:1.8;color:#3d4556;margin:0 0 16px}
+.thumbs{display:flex;justify-content:center;gap:10px;margin:0 0 18px;--s:.2}
+.thumbs .th{position:relative;border-radius:6px;overflow:hidden;flex:none}
+.thumbs .th .sheet{filter:blur(2.5px);box-shadow:none}
+.thumbs .th span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(27,36,64,.82);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pw ol{list-style:none;margin:0 auto 20px;padding:0;max-width:520px;text-align:left;display:grid;gap:0;border-top:1px solid #eef0f4}
+.pw li{display:flex;gap:10px;align-items:baseline;padding:9px 4px;border-bottom:1px solid #eef0f4;font-size:14px}
+.pw li i{font-style:normal;font-weight:900;color:#2e9c9a;font-size:12px;min-width:2.4em}
+.pw li small{color:#7a8292;font-size:12px;margin-left:auto;text-align:right}
+.pw li.hl{background:#fff4f8}
+.pw .big{display:block;width:100%;max-width:520px;margin:0 auto;font-size:18px;padding:17px 20px;box-shadow:0 6px 16px rgba(232,65,122,.3)}
+.pw .big small{display:block;font-size:12px;font-weight:700;opacity:.92;margin-top:2px}
+.pw .pts{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:12px 0 0;font-size:12.5px;color:#3d4556}
+.pw .pts span::before{content:"✓ ";color:#2e9c9a;font-weight:900}
+.pw .law{margin-top:12px;font-size:11.5px}.pw .law a{color:#7a8292}
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.97);border-top:1px solid #e4e7ee;box-shadow:0 -4px 16px rgba(27,36,64,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:12px;transform:translateY(110%);transition:transform .25s}
+#bar.on{transform:none}
+body:has(#bar){padding-bottom:84px}
+#bar p{margin:0;font-size:13px;font-weight:700;line-height:1.4}#bar p small{display:block;font-weight:400;color:#5b6476;font-size:11.5px}
+#bar .btn{padding:11px 18px;font-size:14px;white-space:nowrap}
+@media (max-width:560px){.thumbs{--s:.12;gap:8px}.thumbs .th span{font-size:9.5px;padding:2px 6px}.pw{padding:22px 14px}.pw li small{display:none}}
+@media (prefers-reduced-motion:reduce){#bar{transition:none}}
 @page{size:794px 1123px;margin:0}
 @media print{
  :root{--s:1!important}
+ #bar,.pw{display:none!important}
  body{background:#fff}
  .ui,.noprint{display:none!important}
  #pages{padding:0;gap:0;display:block}
@@ -93,20 +120,50 @@ function dateForm(){
  if(/Line\//.test(navigator.userAgent)){const u=new URL(location.href);u.searchParams.set('openExternalBrowser','1');G('extbtn').href=u.toString();G('ext').hidden=false}
  G('paidline').href='https://line.me/R/oaMessage/'+encodeURIComponent('@594tlzba')+'/?'+encodeURIComponent('【購入済み】レポートを作りました');
 }
+function paywall(out,shown,label){
+ const rest=out.plan.filter((p,i)=>!shown.includes(i)&&p.key!=='cover'&&p.key!=='contents');
+ const th=[...rest.slice(0,3)].map(p=>`<div class="th">${out.pages[p.no-1]}<span>購入すると読めます</span></div>`).join('');
+ const li=rest.map(p=>`<li><i>P${String(p.no).padStart(2,'0')}</i><span>${p.t}</span><small>${p.s||''}</small></li>`);
+ const at=rest.findIndex(p=>p.key==='manual');
+ if(!out.r.partners.length)li.splice(at,0,'<li class="hl"><i>＋</i><span><b>大切な人への伝え方</b>（3人まで）</span><small>1人1ページ</small></li>');
+ return `<div class="pw noprint" id="pw"><div class="tag">${label}</div>
+ <h2>続きは、<b>あなたの生年月日</b>で<br>あと${rest.length}ページ以上</h2>
+ <p class="lead">ここから先は購入した方だけが読めます。<br>夫・上司・子どもなど、大切な人への伝え方も入ります。</p>
+ <div class="thumbs">${th}</div>
+ <ol>${li.join('')}</ol>
+ <a class="btn pink big" href="${BUY_URL}">980円で続きを読む<small>お支払い後すぐ、あなた専用で作成</small></a>
+ <div class="pts"><span>その場でPDF保存</span><span>大切な人3人まで</span><span>何度でも作り直せる</span></div>
+ <div class="law"><a href="./law.html">特定商取引法に基づく表記</a></div></div>`;
+}
+function stickyBar(){
+ if(document.getElementById('bar'))return;
+ const b=document.createElement('div');b.id='bar';b.className='noprint';
+ b.innerHTML=`<p>続きはあなた専用で<small>980円（税込）・すぐ読めます</small></p><a class="btn pink" href="${BUY_URL}">続きを読む</a>`;
+ document.body.appendChild(b);
+ const pw=document.getElementById('pw');let pwIn=false;
+ if(pw&&'IntersectionObserver' in window)new IntersectionObserver(es=>{pwIn=es[0].isIntersecting;upd()}).observe(pw);
+ const upd=()=>b.classList.toggle('on',scrollY>320&&!pwIn);
+ addEventListener('scroll',upd,{passive:true});upd();
+}
 function salesView(){
  ui.innerHTML=`<div class="eyebrow">TSUTAWARU PERSONAL ISSUE</div>
  <h1>「なんで伝わらないの？」を、<br>今日で終わりに。</h1>
  <p>夫、上司、子ども。大切な人の生年月日を入れると、<b>その人に伝わる言い方</b>が1人1ページで分かります。そのまま送れる文例30本、あなたの12タイプ解説、まわりに渡せる「わたしの取扱説明書」つき。</p>
- <div class="row"><a class="btn pink" href="${BUY_URL}">980円で大切な人への伝え方を見る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div>
- <p class="note">下は見本（1990年1月23日生まれ）の最初のページです。</p>`;
- render(1990,1,23,'',4);
+ <div class="row"><a class="btn pink" href="${BUY_URL}">980円で大切な人への伝え方を見る</a></div>
+ <p class="note">下は見本（1990年1月23日生まれ）です。最初の数ページを読めます。</p>`;
+ const out=buildReport(1990,1,23,'');
+ pages.innerHTML=out.pages.slice(0,4).join('');
+ pages.lastElementChild.classList.add('lock');
+ pages.insertAdjacentHTML('beforeend',paywall(out,[0,1,2,3],'続きは完全版で'));
+ stickyBar();
 }
 function freeView(){
  const b=(store.get('tw_birth')||'').split('-').map(Number);
  const go=(Y,M,D)=>{const out=buildReport(Y,M,D,'');if(!out){alert('1900年2月5日以降の日付を選んでください。');return}
   const t=TT[out.r.core].n;
   ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>${t}タイプのあなたへ。<br>3つの自分と、伝え方のくわしい結果</h1><p>${Y}年${M}月${D}日生まれ。「あなたの組み合わせ」「ふだんの自分」「相手のタイプ別の伝え方」を無料でお見せします。</p>`;
-  pages.innerHTML=[out.byKey.combo,out.byKey.core,out.byKey.guide].join('')+`<div class="ui noprint" style="padding:8px 0 0"><div class="eyebrow">完全版だけのページ</div><h1>あと${out.count-3}ページ以上、あなた専用で続きます</h1><p>あなたのコード解説／人前の自分／決める時の自分／疲れ方／言い換え12例／そのまま使える文例30本／大切な人3人への伝え方ページ／わたしの取扱説明書／7日間チャレンジ。表紙にお名前も入ります。</p><div class="row"><a class="btn pink" href="${BUY_URL}">980円で完全版を作る</a><a class="btn ghost" href="?sample=1">見本を全部見る</a></div><p class="note">お支払い後すぐに作成できます。PDFで保存できます。</p></div>`;};
+  const ks=['combo','core','guide'];pages.innerHTML=ks.map(k=>out.byKey[k]).join('');
+  pages.insertAdjacentHTML('beforeend',paywall(out,ks.map(k=>out.plan.findIndex(p=>p.key===k)),'ここまで無料'));stickyBar();};
  if(b.length===3&&b[0]){go(b[0],b[1],b[2]);return}
  ui.innerHTML=`<div class="eyebrow">FREE ／ くわしい結果</div><h1>生年月日を選んでください</h1><form id="ff"><select id="fy" aria-label="年"></select><select id="fm" aria-label="月"></select><select id="fd" aria-label="日"></select><button class="btn main" type="submit">見る</button></form>`;
  const G=i=>document.getElementById(i),yS=G('fy'),mS=G('fm'),dS=G('fd');
